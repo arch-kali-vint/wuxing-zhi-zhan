@@ -1,0 +1,322 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>五行之战</title><style>
+:root{--wood:#2ecc71;--fire:#e74c3c;--earth:#f1c40f;--metal:#bdc3c7;--water:#3498db}
+body{font-family:monospace;background:#050000;color:#e0e0e0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;overflow:hidden;contain:paint}
+#m{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;opacity:0.15}
+.lang-menu-container{position:absolute;top:20px;right:20px;z-index:10}
+.lang-btn{background:none;border:none;color:#cfb53b;font-size:2rem;cursor:pointer}
+.lang-dropdown{display:none;position:absolute;right:0;top:45px;background:rgba(25,25,25,0.95);border:1px solid #cfb53b;border-radius:6px;z-index:100;max-height:240px;overflow-y:auto}
+.lang-dropdown button{display:block;width:100%;padding:8px 15px;background:none;border:none;color:#e0e0e0;cursor:pointer;text-align:left}
+.lang-dropdown button:hover{background:rgba(207,181,59,0.2)}
+.game-container{background:rgba(10,18,10,0.8);border:2px solid #cfb53b;border-radius:16px;padding:25px;width:550px;height:570px;box-sizing:border-box;text-align:center;z-index:5;box-shadow:0 0 30px rgba(46,204,113,0.2);position:relative;overflow:hidden;contain:strict}
+#menu-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;opacity:0.25;pointer-events:none}
+.inner-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box}
+h1{color:#cfb53b;margin:0;font-size:2.3rem;text-shadow:0 0 10px rgba(207,181,59,0.4);height:65px;display:flex;align-items:center;justify-content:center;line-height:1.1;word-break:break-word}
+.rules-line{color:#658a6b;margin:2px 0;font-size:0.9rem;height:18px;overflow:hidden}
+.score-board{display:flex;justify-content:space-between;margin:5px 0;font-size:1.2rem;border-bottom:2px solid rgba(207,181,59,0.2);padding-bottom:5px;font-weight:bold}
+.save-controls{display:flex;justify-content:center;gap:10px;margin:2px 0}
+.save-controls button{background:rgba(40,40,40,0.5);border:1px solid rgba(207,181,59,0.5);color:#cfb53b;padding:3px 10px;font-size:0.8rem;border-radius:4px;cursor:pointer}
+.save-controls button:hover{background:#cfb53b;color:#000}
+.level-container{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,0.4);padding:4px 10px;border-radius:20px;border:1px solid rgba(207,181,59,0.3);margin:2px auto;width:180px;font-size:0.85rem;box-sizing:border-box}
+.xp-bar-bg{background:#222;width:90px;height:8px;border-radius:4px;overflow:hidden;border:1px solid #444}
+.xp-bar-fill{background:linear-gradient(90deg,#f1c40f,#cfb53b);width:0%;height:100%;transition:width 0.4s}
+.turn-indicator{background:rgba(0,0,0,0.6);border:1px solid rgba(207,181,59,0.2);padding:4px 15px;border-radius:6px;font-size:0.95rem;font-weight:bold;margin:4px auto;width:200px;text-align:center;transition:all 0.3s}
+.turn-player{border-color:#f1c40f;color:#f1c40f;box-shadow:0 0 10px rgba(241,196,15,0.2)}
+.turn-ai{border-color:#e74c3c;color:#e74c3c;box-shadow:0 0 10px rgba(231,76,60,0.2)}
+.battlezone{height:140px;display:flex;justify-content:center;align-items:center;gap:25px;margin:5px 0;background:rgba(2,5,2,0.7);border-radius:12px;border:1px solid rgba(46,204,113,0.2);position:relative;overflow:hidden}
+#battle-fx{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.card-container{perspective:1000px;width:80px;height:110px;position:relative;z-index:4}
+.card-inner{position:relative;width:100%;height:100%;text-align:center;transition:transform 0.6s;transform-style:preserve-3d}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-front,.card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-sizing:border-box}
+.card-front{border:2px dashed rgba(207,181,59,0.3);background:rgba(0,0,0,0.4)}
+.card-back{transform:rotateY(180deg);font-size:1.8rem;font-weight:bold;box-shadow:0 5px 15px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1)}
+.card{width:80px;height:110px;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:1.8rem;font-weight:bold;cursor:pointer;transition:transform 0.2s;border:1px solid rgba(255,255,255,0.1);box-sizing:border-box}
+.card:hover{transform:translateY(-6px)}
+.card-label{font-size:0.7rem;margin-top:4px;font-weight:bold;text-transform:uppercase}
+.hand{display:flex;justify-content:center;gap:10px;margin-top:10px}
+.wood{background:linear-gradient(135deg,#2ecc71,#27ae60)} .fire{background:linear-gradient(135deg,#e74c3c,#c0392b)} .earth{background:linear-gradient(135deg,#f1c40f,#f39c12);color:#222} .metal{background:linear-gradient(135deg,#bdc3c7,#95a5a6);color:#222} .water{background:linear-gradient(135deg,#3498db,#2980b9)}
+.vs{font-size:1.4rem;color:#2ecc71;font-weight:bold}
+#log{color:#fff;min-height:35px;font-style:italic;font-size:1.05rem;margin:5px 0 0 0}
+.setup-screen{display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:5px;height:320px;justify-content:center;box-sizing:border-box}
+.setup-screen button{background:rgba(20,30,20,0.9);border:1px solid #cfb53b;color:#fff;padding:6px 15px;font-size:1rem;border-radius:8px;cursor:pointer;min-width:140px;height:36px;box-sizing:border-box}
+.setup-screen button:hover{background:#cfb53b;color:#000}
+.leaderboard{margin-top:8px;width:100%;max-width:250px;height:125px;border:1px solid rgba(207,181,59,0.3);border-radius:8px;padding:6px;background:rgba(0,0,0,0.3);font-size:0.8rem;box-sizing:border-box;overflow:hidden}
+.lb-title{color:#cfb53b;font-weight:bold;margin-bottom:3px;border-bottom:1px solid rgba(207,181,59,0.2)}
+.lb-row{display:flex;justify-content:space-between;padding:1px 0;color:#bbb}
+.shake{animation:shakeAnim 0.4s infinite}
+@keyframes shakeAnim{0%,100%{transform:translate(0,0)}20%{transform:translate(-4px,4px)}40%{transform:translate(4px,-4px)}60%{transform:translate(-4px,-4px)}80%{transform:translate(4px,4px)}}
+</style></head><body><canvas id="m"></canvas>
+<div class="lang-menu-container"><button class="lang-btn" onclick="snd(500,0.08);document.getElementById('langDropdown').style.display='block'">🌐</button>
+<div class="lang-dropdown" id="langDropdown">
+<button onclick="snd(700,0.05);setLanguage('zh')">中文</button><button onclick="snd(700,0.05);setLanguage('ru')">Русский</button><button onclick="snd(700,0.05);setLanguage('be')">Беларуская</button><button onclick="snd(700,0.05);setLanguage('uk')">Українська</button><button onclick="snd(700,0.05);setLanguage('pl')">Polski</button><button onclick="snd(700,0.05);setLanguage('en')">English</button><button onclick="snd(700,0.05);setLanguage('de')">Deutsch</button><button onclick="snd(700,0.05);setLanguage('es')">Español</button><button onclick="snd(700,0.05);setLanguage('pt')">Português</button><button onclick="snd(700,0.05);setLanguage('ja')">日本語</button><button onclick="snd(700,0.05);setLanguage('ko')">한국어</button>
+</div></div>
+<div class="game-container" id="gBox"><canvas id="menu-canvas"></canvas><div class="inner-content">
+<h1 id="game-title">五行之战</h1><div class="level-container"><span id="lbl-lvl">等级: 1</span><div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-fill"></div></div></div>
+<div class="rules-line" id="game-rules">木 克 土 | 土 克 水 | 水 克 火 | 火 克 金 | 金 克 木</div>
+<div id="setupView" class="setup-screen"><p id="setup-text" style="font-size:1.1rem;margin:0;height:24px">选择游戏模式:</p>
+<button onclick="startWithTarget(3)" id="b3">至3胜</button><button onclick="startWithTarget(5)" id="b5">至5胜</button><button onclick="startWithTarget(10)" id="b10">至10胜</button>
+<div class="leaderboard"><div class="lb-title" id="lb-hdr">排行榜</div><div id="lb-content"></div></div></div>
+<div id="playView" style="display:none">
+<div class="turn-indicator turn-player" id="turn-box">Твой ход</div>
+<div class="score-board"><div><span id="label-player">玩家: </span><span id="player-score">0</span></div><div id="match-target-label" style="color:#cfb53b;font-size:0.85rem"></div><div><span id="label-ai">人工智能: </span><span id="ai-score">0</span></div></div>
+<div class="save-controls"><button onclick="saveGame()" id="btn-save">保存</button><button onclick="loadGame()" id="btn-load">载入</button></div>
+<div class="battlezone"><canvas id="battle-fx"></canvas><div class="card-container"><div class="card-inner" id="p-card-inner"><div class="card-front"></div><div class="card-back" id="player-slot"></div></div></div><div class="vs">VS</div><div class="card-container"><div class="card-inner" id="a-card-inner"><div class="card-front"></div><div class="card-back" id="ai-slot"></div></div></div></div><p id="log">请选择element进行攻击...</p>
+<div class="hand"><div class="card wood" onclick="selectPlayerCard('wood')">木<div class="card-label" id="lbl-wood"></div></div><div class="card fire" onclick="playTurn('fire')">火<div class="card-label" id="lbl-fire"></div></div><div class="card earth" onclick="playTurn('earth')">土<div class="card-label" id="lbl-earth"></div></div><div class="card metal" onclick="metalClick()">金<div class="card-label" id="lbl-metal"></div></div><div class="card water" onclick="selectPlayerCard('water')">水<div class="card-label" id="lbl-water"></div></div></div></div></div></div>
+<script>
+let c, x, mc, mx;
+const mch = "木火土金水天地人日月星辰风云雷雨电晴阴寒暑时形兵".split("");
+let drops = [], mDrops = [];
+
+// ФИКС ИЕРАРХИИ: Объявляем музыкальный движок в самом верху, чтобы клик-триггер его сразу видел!
+let musicInterval = null, melodyStep = 0;
+const guqinScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
+
+window.snd = function(f, d, type="sine") {
+    try {
+        const ctx = new(window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type = type;
+        o.frequency.setValueAtTime(f, ctx.currentTime);
+        if (type === "sawtooth" || type === "triangle") {
+            g.gain.setValueAtTime(0.05, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d);
+        } else {
+            g.gain.setValueAtTime(0.1, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + d);
+        }
+        o.start(); o.stop(ctx.currentTime + d);
+    } catch (e) {}
+};
+
+function startChineseBGM() {
+    if (musicInterval) return;
+    musicInterval = setInterval(() => {
+        if (gOver || animating) return;
+        if (melodyStep % 2 === 0 && Math.random() > 0.3) {
+            const freq = guqinScale[Math.floor(Math.random() * guqinScale.length)];
+            snd(freq, 0.7, "triangle");
+            if (Math.random() > 0.6) {
+                setTimeout(() => snd(freq * 1.5, 0.4, "sine"), 220);
+            }
+        }
+        melodyStep++;
+    }, 450);
+}
+
+function startMatrixEngines() {
+    c = document.getElementById('m'); x = c.getContext('2d');
+    mc = document.getElementById('menu-canvas'); mx = mc.getContext('2d');
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const cols = Math.floor(c.width / 16) + 5;
+    drops = Array(cols).fill(0).map(() => Math.floor(Math.random() * (c.height / 16)));
+    const b = document.getElementById('gBox').getBoundingClientRect();
+    mc.width = b.width; mc.height = b.height;
+    const mCols = Math.floor(mc.width / 14) + 5;
+    mDrops = Array(mCols).fill(0).map(() => Math.floor(Math.random() * (mc.height / 14)));
+    setInterval(drawGlobalMatrix, 33);
+    setInterval(drawMenuMatrix, 40);
+}
+
+function drawGlobalMatrix() {
+    x.fillStyle = 'rgba(5,0,0,0.05)'; x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = '#ff1a1a'; x.font = '16px monospace';
+    drops.forEach((d, i) => {
+        const txt = mch[Math.floor(Math.random() * mch.length)];
+        x.fillText(txt, i * 16, d * 16);
+        if (d * 16 > c.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    });
+}
+
+function drawMenuMatrix() {
+    if (!mc.width) return;
+    mx.fillStyle = 'rgba(10,18,10,0.08)'; mx.fillRect(0, 0, mc.width, mc.height);
+    mx.fillStyle = '#2ecc71'; mx.font = '14px monospace';
+    mDrops.forEach((d, i) => {
+        const txt = mch[Math.floor(Math.random() * mch.length)];
+        mx.fillText(txt, i * 14, d * 14);
+        if (d * 14 > mc.height && Math.random() > 0.95) mDrops[i] = 0;
+        mDrops[i]++;
+    });
+}
+
+window.addEventListener('resize', () => {
+    if(c && mc) {
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const b = document.getElementById('gBox').getBoundingClientRect();
+        mc.width = b.width; mc.height = b.height;
+    }
+});
+
+function speakImmediate(text, locale) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        setTimeout(() => {
+            const u = new SpeechSynthesisUtterance();
+            u.text = text; u.lang = locale; u.rate = 0.9; u.pitch = 0.85;
+            const voices = window.speechSynthesis.getVoices();
+            let targetVoice = voices.find(v => v.lang.includes(locale) || v.lang.replace('_', '-').includes(locale));
+            if (!targetVoice && (locale.startsWith('be') || locale.startsWith('uk'))) {
+                targetVoice = voices.find(v => v.lang.startsWith('ru')); u.lang = 'ru-RU';
+                if (locale.startsWith('be')) u.text = text.replace(/і/g, 'и').replace(/ў/g, 'в').replace(/э/g, 'э').replace(/я/g, 'я');
+                if (locale.startsWith('uk')) u.text = text.replace(/і/g, 'и').replace(/ї/g, 'йи').replace(/є/g, 'е').replace(/и/g, 'ы');
+            }
+            if (targetVoice) u.voice = targetVoice;
+            window.speechSynthesis.speak(u);
+        }, 50);
+    }
+}
+
+let userHasInteracted = false;
+window.addEventListener('click', () => {
+    if (!userHasInteracted) {
+        userHasInteracted = true;
+        snd(523.25, 0.15);
+        startChineseBGM(); 
+        speakImmediate(_0xData[_0xL].welcome, _0xData[_0xL].loc);
+    }
+}, { once: true });
+const _0xData={
+"zh":{"t":"五行之战","r":"木 克 土 | 土 克 水 | 水 克 火 | 火 克 金 | 金 克 木","p":"玩家","a":"人工智能","s":"请选择一个元素进行攻击...","re":"平局!","w":"获胜!","l":"失败!","st":"选择游戏模式:","3":"至3胜","5":"至5胜","10":"至10胜","fw":"玩家获胜!🎉","fl":"人工智能获胜!🤖","sv":"保存","ld":"载入","hdr":"排行榜","no":"无记录","to":"至","lvl":"等级: ","welcome":"你好，欢迎来到五行之战","loc":"zh-CN","lbls":["木","火","土","金","水"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"你的回合","aiturn":"人工智能回合...","v_win":"玩家获胜","v_lose":"人工智能获胜"},
+"ru":{"t":"Битва Пяти Элементов","r":"Дерево > Земля | Земля > Вода | Вода > Огонь | Огонь > Металл | Металл > Дерево","p":"Игрок","a":"ИИ","s":"Выбери элемент для атаки...","re":"Ничья!","w":"Победа!","l":"Проигрыш!","st":"Выберите режим игры:","3":"До 3 побед","5":"До 5 побед","10":"До 10 побед","fw":"Ты победил в матче! 🎉","fl":"ИИ победил в матче! 🤖","sv":"Сохранить","ld":"Загрузить","hdr":"Рекорды","no":"Нет записей","to":"до","lvl":"Уровень: ","welcome":"Приветствую тебя в битве пяти элементов","loc":"ru-RU","lbls":["Дерево","Огонь","Земля","Металл","Вода"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Твой ход","aiturn":"Ходит компьютер","v_win":"Поздравляю, ты победил","v_lose":"Компьютер победил"},
+"be":{"t":"Бітва Пяці Элементаў","r":"Дрэва > Зямля | Зямля > Вада | Вада > Агонь | Агонь > Метал | Метал > Дрэва","p":"Гулец","a":"ШІ","s":"Виберы элемент для атакі...","re":"Нічыя!","w":"Перамога!","l":"Проігрыш!","st":"Виберыце рэжым гульні:","3":"Да 3 перамог","5":"Да 5 перамог","10":"Да 10 перамог","fw":"Ты перамог у матчы! 🎉","fl":"ШІ перамог у матчы! 🤖","sv":"Захаваць","ld":"Загрузіць","hdr":"Рекорды","no":"Няма запісаў","to":"да","lvl":"Узровень: ","welcome":"Вітаю цябе ў бітве пяці элементаў","loc":"be-BY","lbls":["Дрэва","Агонь","Зямля","Метал","Вада"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Твой ход","aiturn":"Ходзіць камп’ютар","v_win":"Ты перамог у матчы","v_lose":"Камп’ютар перамог"},
+"uk":{"t":"Битва П'яти Елементів","r":"Дерево > Земля | Земля > Вода | Вода > Вогонь | Вогонь > Метал | Метал > Дерево","p":"Гравець","a":"ШІ","s":"Вибери елемент для атаки...","re":"Нічия!","w":"Перемога!","l":"Програш!","st":"Оберіть режим гри:","3":"До 3 перемог","5":"До 5 перемог","10":"До 10 перемог","fw":"Ти переміг у матчі! 🎉","fl":"ШІ переміг у матчі! 🤖","sv":"Зберегти","ld":"Завантажити","hdr":"Рекорды","no":"Немає записів","to":"до","lvl":"Рівень: ","welcome":"Вітаю тебе у битві п'яти елементів","loc":"uk-UA","lbls":["Дерево","Вогонь","Земля","Метал","Вода"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Твіт хід","aiturn":"Ходить комп’ютер","v_win":"Ти переміг у матчі","v_lose":"Комп’ютер переміг"},
+"pl":{"t":"Bitwa Pięciu Elementów","r":"Drewno > Ziemia | Ziemia > Woda | Woda > Ogień | Ogień > Metal | Metal > Drewno","p":"Gracz","a":"AI","s":"Wybierz element do ataku...","re":"Remis!","w":"Wygrana!","l":"Przegrana!","st":"Wybierz tryb gry:","3":"Do 3 wygranych","5":"Do 5 wygranych","10":"Do 10 wygranych","fw":"Wygrałeś mecz! 🎉","fl":"AI wygrał mecz! 🤖","sv":"Zapisz","ld":"Wczytaj","hdr":"Rekordy","no":"Brak wpisów","to":"do","lvl":"Poziom: ","welcome":"Witaj w bitwie pięciu elementów","loc":"pl-PL","lbls":["Drewno","Ogień","Ziemia","Metal","Woda"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Twój ruch","aiturn":"Ruch komputera","v_win":"Wygrałeś mecz","v_lose":"Komputer wygrał"},
+"en":{"t":"Battle of Five Elements","r":"Wood > Earth | Earth > Water | Water > Fire | Fire > Metal | Metal > Wood","p":"Player","a":"AI","s":"Choose an element to attack...","re":"Draw!","w":"Victory!","l":"Defeat!","st":"Select game mode:","3":"To 3 Wins","5":"To 5 Wins","10":"To 10 Wins","fw":"You won the match! 🎉","fl":"AI won the match! 🤖","sv":"Save","ld":"Load","hdr":"Leaderboard","no":"No records","to":"to","lvl":"Level: ","welcome":"Welcome to the battle of five elements","loc":"en-US","lbls":["Wood","Fire","Earth","Metal","Water"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Your Turn","aiturn":"AI Turn","v_win":"You won the match","v_lose":"AI won the match"},
+"de":{"t":"Kampf der fünf Elemente","r":"Holz > Erde | Erde > Wasser | Wasser > Feuer | Feuer > Metall | Metall > Holz","p":"Spieler","a":"KI","s":"Wählen Sie ein Element zum Angreifen...","re":"Unentschieden!","w":"Sieg!","l":"Niederlage!","st":"Spielmodus wählen:","3":"Bis 3 Siege","5":"Bis 5 Siege","10":"Bis 10 Siege","fw":"Du hast das Spiel gewonnen! 🎉","fl":"KI hat das Spiel gewonnen! 🤖","sv":"Speichern","ld":"Laden","hdr":"Bestenliste","no":"Keine Einträge","to":"bis","lvl":"Stufe: ","welcome":"Willkommen beim Kampf der fünf Elemente","loc":"de-DE","lbls":["Holz","Feuer","Erde","Metall","Wasser"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Du bist dran","aiturn":"Computer am Zug","v_win":"Du hast gewonnen","v_lose":"Computer hat gewonnen"},
+"es":{"t":"Batalla de Elementos","r":"Madera > Tierra | Tierra > Agua | Agua > Fuego | Fuego > Metal | Metal > Madera","p":"Jugador","a":"IA","s":"Elige un elemento para atacar...","re":"Empate!","w":"Victoria!","l":"Derrota!","st":"Selecciona modo:","3":"A 3 Victorias","5":"A 5 Victorias","10":"A 10 Victorias","fw":"¡Ganaste el juego! 🎉","fl":"¡IA ganó el juego! 🤖","sv":"Guardar","ld":"Cargar","hdr":"Récords","no":"Sin registros","to":"a","lvl":"Nivel: ","welcome":"Bienvenido a la batalla de elementos","loc":"es-ES","lbls":["Madera","Fuego","Tierra","Metal","Agua"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Tu Turno","aiturn":"Turno de IA","v_win":"Ganaste el juego","v_lose":"IA ganó el juego"},
+"pt":{"t":"Batalha dos Cinco Elementos","r":"Madeira > Terra | Terra > Água | Água > Fogo | Fogo > Metal | Metal > Madeira","p":"Jogador","a":"IA","s":"Escolha um elemento para atacar...","re":"Empate!","w":"Vitória!","l":"Derrota!","st":"Selecionar modo:","3":"Até 3 Vitórias","5":"Até 5 Vitórias","10":"Até 10 Vitórias","fw":"Você ganhou o jogo! 🎉","fl":"A IA ganhou o jogo! 🤖","sv":"Salvar","ld":"Carregar","hdr":"Recordes","no":"Sem registros","to":"até","lvl":"Nível: ","welcome":"Bem-vindo à batalha dos cinco elementos","loc":"pt-PT","lbls":["Madeira","Fogo","Terra","Metal","Água"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"Seu Turno","aiturn":"Turno da IA","v_win":"Você ganhou o jogo","v_lose":"A IA ganhou o jogo"},
+"ja":{"t":"五行の戦い","r":"木 克 土 | 土 克 水 | 水 克 火 | 火 克 金 | 金 克 木","p":"プレイヤー","a":"AI","s":"攻撃する元素を選択してください...","re":"引き分け!","w":"勝利!","l":"敗北!","st":"ゲームモードを選択:","3":"3勝まで","5":"5勝まで","10":"10勝まで","fw":"あなたの勝利です！ 🎉","fl":"AIの勝利です！ 🤖","sv":"保存","ld":"ロード","hdr":"記録","no":"履歴なし","to":"まで","lvl":"レベル: ","welcome":"五行の戦いへようこそ","loc":"ja-JP","lbls":["木","火","土","金","水"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"あなたの番","aiturn":"AIの番","v_win":"あなたの勝利です","v_lose":"AIの勝利です"},
+"ko":{"t":"오행의 전투","r":"목 극 토 | 토 극 수 | 수 극 화 | 화 극 금 | 금 극 목","p":"플레이어","a":"인공지능","s":"공격할 원소를 선택하세요...","re":"무승부!","w":"승리!","l":"패배!","st":"게임 모드 선택:","3":"3승 선취","5":"5승 선취","10":"10승 선취","fw":"당신이 승리했습니다! 🎉","fl":"AI가 승리했습니다! 🤖","sv":"저장","ld":"불러오기","hdr":"기록","no":"기록 없음","to":"~","lvl":"레벨: ","welcome":"오행의 전투에 오신 것을 환영합니다","loc":"ko-KR","lbls":["목","화","土","금","수"],"beats":{"wood":"earth","earth":"water","water":"fire","fire":"metal","metal":"wood"},"pturn":"당신 차례","aiturn":"AI 차례","v_win":"당신이 승리했습니다","v_lose":"AI가 승리했습니다"}
+};
+const _0xE=["wood","fire","earth","metal","water"],emojiMap={"wood":"木","fire":"火","earth":"土","metal":"金","water":"水"};
+let _0xPS=0,_0xAS=0,_0xL="zh",maxScore=3,gOver=false,animating=false,autoTurnTimer=null,userLevel=1,userXP=0;
+const bfx=document.getElementById("battle-fx"),bx=bfx.getContext("2d");let fxParticles=[],fxActive=false,fxType="",fxStart=0;
+function rFx(){bfx.width=bfx.offsetWidth;bfx.height=bfx.offsetHeight}window.addEventListener('resize',rFx);
+function addXP(amount){userXP+=amount;if(userXP>=100){userXP-=100;userLevel++;snd(500,0.2,"sine");const gb=document.getElementById("gBox");gb.style.borderColor="#f1c40f";gb.style.boxShadow="0 0 50px #f1c40f";setTimeout(()=>{gb.style.borderColor="#cfb53b";gb.style.boxShadow="0 0 30px rgba(207,181,59,0.15)"},1500)}document.getElementById("lbl-lvl").innerText=_0xData[_0xL].lvl+userLevel;document.getElementById("xp-fill").style.width=userXP+"%"}
+function triggerElementFX(t){rFx();fxType=t;fxParticles=[];fxActive=true;fxStart=Date.now();const w=bfx.width,h=bfx.height;
+if(t==="fire"){for(let i=0;i<40;i++)fxParticles.push({x:Math.random()*w,y:h,r:Math.random()*12+4,vy:-Math.random()*3-2,vx:Math.random()*2-1,c:Math.random()>0.4?'#e74c3c':'#f1c40f'})}
+if(t==="water"){for(let i=0;i<40;i++)fxParticles.push({x:Math.random()*w,y:-10,r:Math.random()*5+2,vy:Math.random()*6+4,vx:Math.random()*1-0.5})}
+if(t==="wood"){for(let i=0;i<15;i++)fxParticles.push({x:Math.random()*w,y:h,h:0,maxH:Math.random()*70+40,s:Math.random()*2+2})}
+if(t==="earth"){for(let i=0;i<10;i++)fxParticles.push({x:Math.random()*w,y:h+10,r:Math.random()*10+5,vy:-Math.random()*4-4,vx:Math.random()*3-1.5,g:0.2,s:0})}
+if(t==="metal"){for(let i=0;i<4;i++)fxParticles.push({x1:Math.random()*w,y1:0,x2:Math.random()*w,y2:h,v:true})}}
+function updateFX(){if(!fxActive)return;const e=Date.now()-fxStart;if(e>3000&&!gOver){fxActive=false;bx.clearRect(0,0,bfx.width,bfx.height);return}bx.clearRect(0,0,bfx.width,bfx.height);
+if(fxType==="fire"){fxParticles.forEach(p=>{p.y+=p.vy;p.x+=p.vx;bx.fillStyle=p.c;bx.beginPath();bx.arc(p.x,p.y,p.r*Math.max(0,1-e/3000),0,Math.PI*2);bx.fill()})}
+if(fxType==="water"){fxParticles.forEach(p=>{p.y+=p.vy;p.x+=p.vx;if(p.y>bfx.height)p.y=-10;bx.fillStyle='#3498db';bx.beginPath();bx.arc(p.x,p.y,p.r,0,Math.PI*2);bx.fill();if(p.y>bfx.height-20){bx.fillStyle='#fff';bx.fillRect(p.x+Math.random()*10-5,bfx.height-Math.random()*10,2,2)}})}
+if(fxType==="wood"){fxParticles.forEach(p=>{if(p.h<p.maxH)p.h+=p.s;bx.lineWidth=3;bx.strokeStyle='#2ecc71';bx.beginPath();bx.moveTo(p.x,bfx.height);bx.lineTo(p.x+Math.sin(p.h*0.1)*5,bfx.height-p.h);bx.stroke()})}
+if(fxType==="earth"){fxParticles.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;if(p.y>bfx.height&&p.vy>0){p.vy=-p.vy*0.4;p.s++}bx.fillStyle=p.s>0?'#e67e22':'#d35400';bx.fillRect(p.x,p.y,p.r,p.r)})}
+if(fxType==="metal"){fxParticles.forEach(p=>{if(e<600){bx.strokeStyle='#fff';bx.lineWidth=3;bx.beginPath();bx.moveTo(p.x1,p.y1);bx.lineTo(p.x2,p.y2);bx.stroke()}if(Math.random()<0.3){bx.fillStyle='#fff';bx.fillRect(Math.random()*bfx.width,Math.random()*bfx.height,2,2)}})}
+if(fxType==="victory_match"){if(Math.random()<0.4)fxParticles.push({x:Math.random()*bfx.width,y:bfx.height,r:Math.random()*5+2,vy:-Math.random()*5-3,vx:Math.random()*4-2,c:`hsl(${Math.random()*360},100%,60%)`});fxParticles.forEach(p=>{p.y+=p.vy;p.x+=p.vx;bx.fillStyle=p.c;bx.beginPath();bx.arc(p.x,p.y,p.r,0,Math.PI*2);bx.fill()})}
+if(fxType==="defeat_match"){if(Math.random()<0.8)fxParticles.push({x:Math.random()*bfx.width,y:-10,r:Math.random()*3+2,vy:Math.random()*7+5});fxParticles.forEach(p=>{p.y+=p.vy;bx.fillStyle='rgba(231,76,60,0.5)';bx.beginPath();bx.arc(p.x,p.y,p.r,0,Math.PI*2);bx.fill()})}}setInterval(updateFX,1000/60);
+window.metalClick=function(){window.selectPlayerCard('metal')};
+function resetAutoTimer(){clearTimeout(autoTurnTimer)}
+function updateLeaderboard(){const l=JSON.parse(localStorage.getItem('wu_lb')||'[]');const box=document.getElementById('lb-content');box.innerHTML='';const t=_0xData[_0xL];if(!l.length){box.innerHTML=`<div class="lb-row">${t.no}</div>`;return}l.slice(0,5).forEach((r,i)=>{const wName=r.w==='P'?t.p:t.a;box.innerHTML+=`<div class="lb-row"><span>#${i+1} ${wName}</span><span>${r.p}:${r.a} (${t.to} ${r.m})</span></div>`})}
+function saveRecord(winner){const l=JSON.parse(localStorage.getItem('wu_lb')||'[]');l.unshift({w:winner,p:_0xPS,a:_0xAS,m:maxScore});localStorage.setItem('wu_lb',JSON.stringify(l));updateLeaderboard()}
+
+window.setLanguage=function(l,isInit=false){
+    _0xL=l;const t=_0xData[_0xL];
+    const titleEl=document.getElementById("game-title");
+    titleEl.innerText=t.t;
+    if(t.t.length > 20) { titleEl.style.fontSize = "1.5rem"; }
+    else if(t.t.length > 12) { titleEl.style.fontSize = "1.8rem"; }
+    else { titleEl.style.fontSize = "2.3rem"; }
+    
+    document.getElementById("game-rules").innerText=t.r;
+    document.getElementById("label-player").innerText=t.p+": ";
+    document.getElementById("label-ai").innerText=t.a+": ";
+    if(!gOver)document.getElementById("log").innerText=t.s;
+    document.getElementById("setup-text").innerText=t.st;
+    ['3','5','10'].forEach(k=>{document.getElementById("b"+k).innerText=t[k]});
+    document.getElementById("btn-save").innerText=t.sv;
+    document.getElementById("btn-load").innerText=t.ld;
+    document.getElementById("lb-hdr").innerText=t.hdr;
+    document.getElementById("match-target-label").innerText=`${t.to} ${maxScore}`;
+    document.getElementById("lbl-lvl").innerText=t.lvl+userLevel;
+    _0xE.forEach((k,i)=>{document.getElementById("lbl-"+k).innerText=_0xL==='zh'?'':t.lbls[i]});
+    document.getElementById("langDropdown").style.display="none";
+    updateLeaderboard();
+    
+    const turnBox = document.getElementById("turn-box");
+    if(turnBox) {
+        if(turnBox.classList.contains("turn-player")) turnBox.innerText = t.pturn;
+        else turnBox.innerText = t.aiturn;
+    }
+    
+    if(!isInit) {
+        userHasInteracted = true;
+        startChineseBGM();
+        speakImmediate(t.welcome, t.loc);
+    }
+};
+
+window.startWithTarget=function(t){const gb=document.getElementById("gBox");gb.classList.remove("shake");snd(523.25,0.1);setTimeout(()=>snd(659.25,0.15),100);maxScore=t;_0xPS=0;_0xAS=0;gOver=false;animating=false;document.getElementById("player-score").innerText=0;document.getElementById("ai-score").innerText=0;document.getElementById("p-card-inner").classList.remove("flipped");document.getElementById("a-card-inner").classList.remove("flipped");gb.style.borderColor="#cfb53b";gb.style.boxShadow="0 0 30px rgba(207,181,59,0.15)";document.getElementById("setupView").style.display="none";document.getElementById("playView").style.display="block";const tb=document.getElementById("turn-box");tb.className="turn-indicator turn-player";tb.innerText=_0xData[_0xL].pturn;window.setLanguage(_0xL,true);startChineseBGM();speakImmediate(_0xData[_0xL].welcome,_0xData[_0xL].loc)};
+window.saveGame=function(){snd(880,0.15);try{localStorage.setItem('wu_ps',_0xPS);localStorage.setItem('wu_as',_0xAS);localStorage.setItem('wu_ms',maxScore);localStorage.setItem('wu_lvl',userLevel);localStorage.setItem('wu_xp',userXP)}catch(e){}};
+window.loadGame=function(){try{const p=localStorage.getItem('wu_ps'),a=localStorage.getItem('wu_as'),m=localStorage.getItem('wu_ms'),lvl=localStorage.getItem('wu_lvl'),xp=localStorage.getItem('wu_xp');if(p!==null&&a!==null&&m!==null){document.getElementById("gBox").classList.remove("shake");snd(523.25,0.2);maxScore=parseInt(m);_0xPS=parseInt(p);_0xAS=parseInt(a);if(lvl!==null)userLevel=parseInt(lvl);if(xp!==null)userXP=parseInt(xp);gOver=false;animating=false;document.getElementById("player-score").innerText=_0xPS;document.getElementById("ai-score").innerText=_0xAS;document.getElementById("xp-fill").style.width=userXP+"%";document.getElementById("p-card-inner").classList.remove("flipped");document.getElementById("a-card-inner").classList.remove("flipped");document.getElementById("setupView").style.display="none";document.getElementById("playView").style.display="block";window.setLanguage(_0xL,true);const tb=document.getElementById("turn-box");tb.className="turn-indicator turn-player";tb.innerText=_0xData[_0xL].pturn;startChineseBGM()}}catch(e){}};
+
+window.selectPlayerCard = function(pChoice) {
+    if (gOver || animating) return;
+    animating = true;
+    const t = _0xData[_0xL];
+    const pSlot = document.getElementById("player-slot");
+    const turnBox = document.getElementById("turn-box");
+    snd(440, 0.08, "triangle");
+    document.getElementById("p-card-inner").classList.remove("flipped");
+    pSlot.className = "card-back " + pChoice;
+    pSlot.innerHTML = emojiMap[pChoice] + `<div class="card-label">${_0xL==='zh'?pChoice.toUpperCase():t.lbls[_0xE.indexOf(pChoice)]}</div>`;
+    document.getElementById("p-card-inner").classList.add("flipped");
+    turnBox.className = "turn-indicator turn-ai";
+    turnBox.innerText = t.aiturn;
+    speakImmediate(t.aiturn, t.loc);
+    snd(110, 0.4, "sawtooth");
+    setTimeout(() => {
+        executeAiTurn(pChoice);
+    }, 2200); 
+};
+
+function executeAiTurn(pChoice) {
+    let aiChoice = _0xE[Math.floor(Math.random()*5)];
+    const roll = Math.random() * 100;
+    const t = _0xData[_0xL];
+    const aSlot = document.getElementById("ai-slot");
+    const gb = document.getElementById("gBox");
+    if (roll < 40) { aiChoice = t.beats[pChoice]; } 
+    else if (roll < 80) { for (let key in t.beats) { if (t.beats[key] === pChoice) { aiChoice = key; break; } } } 
+    else if (roll < 90) { aiChoice = pChoice; }
+    document.getElementById("a-card-inner").classList.remove("flipped");
+    aSlot.className = "card-back " + aiChoice;
+    aSlot.innerHTML = emojiMap[aiChoice] + `<div class="card-label">${_0xL==='zh'?aiChoice.toUpperCase():t.lbls[_0xE.indexOf(aiChoice)]}</div>`;
+    document.getElementById("a-card-inner").classList.add("flipped");
+    snd(180, 0.3, "triangle");
+    triggerElementFX(pChoice);
+    setTimeout(() => {
+        if (pChoice === aiChoice) {
+            document.getElementById("log").innerText = t.re; snd(220, 0.2, "sine"); gb.style.borderColor = "#cfb53b";
+        } else if (t.beats[pChoice] === aiChoice) {
+            _0xPS++; addXP(25); document.getElementById("player-score").innerText = _0xPS; document.getElementById("log").innerText = t.w; snd(392, 0.15); setTimeout(() => snd(523.25, 0.25), 80); gb.style.borderColor = "#2ecc71";
+        } else {
+            _0xAS++; document.getElementById("ai-score").innerText = _0xAS; document.getElementById("log").innerText = t.l; snd(293.66, 0.2); setTimeout(() => snd(220, 0.3), 100); gb.style.borderColor = "#e74c3c";
+        }
+        animating = false;
+        if (_0xPS >= maxScore || _0xAS >= maxScore) {
+            gOver = true; saveRecord(_0xPS >= maxScore ? 'P' : 'A'); rFx(); fxActive = true; fxStart = Date.now();
+            if (_0xPS >= maxScore) {
+                fxType = "victory_match"; gb.style.borderColor = "#2ecc71"; gb.style.boxShadow = "0 0 40px #2ecc71"; snd(523.25, 0.2); setTimeout(() => snd(659.25, 0.2), 100); setTimeout(() => snd(783.99, 0.4), 200); speakImmediate(t.v_win, t.loc);
+            } else {
+                fxType = "defeat_match"; gb.style.borderColor = "#e74c3c"; gb.style.boxShadow = "0 0 40px #e74c3c"; gb.classList.add("shake"); snd(146.83, 0.4, "sawtooth"); setTimeout(() => snd(110, 0.6, "sawtooth"), 200); speakImmediate(t.v_lose, t.loc);
+            }
+            setTimeout(() => {
+                document.getElementById("setupView").style.display = "flex"; document.getElementById("playView").style.display = "none"; gb.classList.remove("shake");
+                if (_0xPS >= maxScore) { document.getElementById("log").innerText = t.fw; } else { document.getElementById("log").innerText = t.fl; updateLeaderboard() }
+            }, 4000);
+        } else {
+            const turnBox = document.getElementById("turn-box"); turnBox.className = "turn-indicator turn-player"; turnBox.innerText = t.pturn; speakImmediate(t.pturn, t.loc); snd(440, 0.1);
+        }
+    }, 200);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    startMatrixEngines();
+    window.setLanguage("zh", true);
+    if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
+});
+</script></body></html>
