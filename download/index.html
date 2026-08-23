@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Битва Пяти Элементов — Скачать игру</title>
+    <meta name="description" content="Скачайте автономные приложения Битвы Пяти Элементов для Windows, Linux, macOS или играйте онлайн.">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #050000;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .bg-matrix {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(5,0,0,0.95), rgba(5,0,0,0.95)), url('https://unsplash.com') repeat;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        .container {
+            background: rgba(10, 18, 10, 0.85);
+            border: 2px solid #cfb53b;
+            border-radius: 16px;
+            padding: 40px 20px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(207, 181, 59, 0.15);
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #cfb53b;
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 15px rgba(207,181,59,0.4);
+        }
+        .subtitle {
+            color: #2ecc71;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .description {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #bbb;
+            margin-bottom: 35px;
+        }
+        .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+        .btn-download {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 340px;
+            padding: 14px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            background: rgba(20, 30, 20, 0.6);
+            border: 1px solid #cfb53b;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .btn-download:hover {
+            background: #cfb53b;
+            color: #050000;
+            box-shadow: 0 0 20px rgba(207, 181, 59, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-online {
+            border-color: #2ecc71;
+            color: #2ecc71;
+            margin-top: 10px;
+        }
+        .btn-online:hover {
+            background: #2ecc71;
+            color: #050000;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+        .icon { font-size: 1.3rem; }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.75rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-matrix"></div>
+    <div class="container">
+        <h1>五行之战</h1>
+        <div class="subtitle">Битва Пяти Элементов</div>
+        <p class="description">
+            Древняя китайская философия Wu Xing в обертке киберпанк-стратегии. Скачайте автономную версию на компьютер или играйте онлайн.
+        </p>
+        
+        <div class="links-grid">
+            <a href="wuxing-game-win32-x64.zip" class="btn-download" download>
+                <span class="icon">🪟</span> Скачать для Windows (.zip)
+            </a>
+            <a href="wuxing-game-linux.tar.gz" class="btn-download" download>
+                <span class="icon">🐧</span> Скачать для Linux (.tar.gz)
+            </a>
+            <a href="wuxing-game-mac.tar.gz" class="btn-download" download>
+                <span class="icon">🍏</span> Скачать для macOS (.tar.gz)
+            </a>
+            
+            <!-- ЖЕСТКАЯ ПРИВЯЗКА ССЫЛКИ, ЧТОБЫ БОЛЬШЕ НЕ УЛЕТАЛО НА ДОКУМЕНТАЦИЮ -->
+           <a href="https://arch-kali-vint.github.io/wuxing-zhi-zhan/" class="btn-download btn-online" style="font-size: 0.85rem; letter-spacing: 0;">
+    <span class="icon">🌐</span> https://arch-kali-vint.github.io/wuxing-zhi-zhan/
+</a>
+        </div>
+        
+        <div class="footer">
+            © 2026 Wuxing Studio. Сборка v1.0.0
+        </div>
+    </div>
+</body>
+</html>
